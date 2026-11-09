@@ -1,0 +1,24 @@
+name: paper-bot
+on:
+  schedule:
+    - cron: "2,17,32,47 * * * *"
+  workflow_dispatch: {}
+permissions:
+  contents: write
+jobs:
+  run:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - name: Scan markets and record pretend bets
+        run: python paper_bot.py
+      - name: Save results back to the repo
+        run: |
+          git config user.name "paper-bot"
+          git config user.email "paper-bot@users.noreply.github.com"
+          git add data/
+          git commit -m "paper bot run $(date -u +%Y-%m-%dT%H:%MZ)" || echo "nothing new"
+          git push
