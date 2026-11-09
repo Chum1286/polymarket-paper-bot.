@@ -1,0 +1,5 @@
+opened_at,market_id,slug,question,asset,kind,strike,end_date,side,price,fee,shares,cost,fair,edge,spot,iv,status,settled_at,payout,pnl
+2026-11-09T22:55:53+00:00,3387867,will-ethereum-dip-to-1750-by-december-31-2026-20260806184731889,"Will Ethereum dip to $1,750 by December 31, 2026?",ETH,touch,1750.0,2027-01-01T05:00:00Z,YES,0.29,0.0144,65.7002,20.0,0.4175,0.1131,2133.18,0.5955,open,,,
+2026-11-09T22:55:53+00:00,3865999,will-ethereum-dip-to-2000-by-december-31-2026-from-august-24,"Will Ethereum dip to $2,000 by December 31, 2026?",ETH,touch,2000.0,2027-01-01T05:00:00Z,YES,0.67,0.0155,29.1768,20.0,0.7804,0.0949,2133.18,0.5498,open,,,
+2026-11-09T22:55:53+00:00,6891205,will-bitcoin-dip-to-70k-november-9-15-2026,"Will Bitcoin dip to $70,000 November 9-15?",BTC,touch,70000.0,2026-11-16T05:00:00Z,YES,0.16,0.0094,118.0582,20.0,0.2512,0.0818,75158.93,0.465,open,,,
+2026-11-09T22:55:53+00:00,6891272,will-ethereum-dip-to-1900-november-9-15-2026,"Will Ethereum dip to $1,900 November 9-15?",ETH,touch,1900.0,2026-11-16T05:00:00Z,YES,0.13,0.0079,145.0148,20.0,0.2182,0.0802,2133.18,0.6996,open,,,
