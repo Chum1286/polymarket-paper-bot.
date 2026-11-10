@@ -1,24 +1,38 @@
 name: paper-bot
 on:
   schedule:
-    - cron: "2,17,32,47 * * * *"
+    - cron: "7 */6 * * *"     # backup: restarts the chain if it ever breaks
   workflow_dispatch: {}
 permissions:
   contents: write
+  actions: write
+concurrency:
+  group: paper-bot          # only one copy runs at a time
+  cancel-in-progress: false
 jobs:
   run:
     runs-on: ubuntu-latest
+    timeout-minutes: 355
     steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-python@v5
+      - uses: actions/checkout@v5
+      - uses: actions/setup-python@v6
         with:
           python-version: "3.12"
-      - name: Scan markets and record pretend bets
-        run: python paper_bot.py
-      - name: Save results back to the repo
+      - name: Set up git
         run: |
           git config user.name "paper-bot"
           git config user.email "paper-bot@users.noreply.github.com"
-          git add data/
-          git commit -m "paper bot run $(date -u +%Y-%m-%dT%H:%MZ)" || echo "nothing new"
-          git push
+      # Public repo: free unlimited minutes, so scan every 15 min for ~5h40m, then start the next run.
+      # Private repo: just one scan, so free minutes aren't used up.
+      - name: Scan markets (both bot versions)
+        run: |
+          if [ "${{ github.event.repository.private }}" = "true" ]; then
+            python run_loop.py 0
+          else
+            python run_loop.py 340
+          fi
+      - name: Start the next run
+        if: ${{ !cancelled() && github.event.repository.private == false }}
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: gh workflow run paper-bot.yml --ref main

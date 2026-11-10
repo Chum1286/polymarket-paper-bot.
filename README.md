@@ -22,6 +22,17 @@ python paper_bot.py     # one scan
 python report.py        # results
 ```
 
+## Two versions run side by side
+- `data/`: **surface** version (volatility at each market's price level, includes the extra cost traders pay for crash protection)
+- `data_atm/`: **atm** version (one volatility per date, no crash premium; same as the backtest)
+
+See results with `python report.py` (surface) or `MODEL=atm python report.py` (atm).
+
+## How it runs
+The repo must be **public** (unlimited free GitHub minutes). Each run scans every 15 minutes for
+about 5h40m, saves results, then starts the next run. A backup schedule restarts it every 6 hours if the
+chain breaks. If the repo is private, it only does one scan per run so free minutes aren't used up.
+
 ## Run it automatically for free (recommended): GitHub Actions
 Runs every 15 minutes in the cloud, even when your laptop is off.
 1. Make a free GitHub account, then create a new **private** repository.

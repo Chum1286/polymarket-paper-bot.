@@ -38,7 +38,11 @@ CONFIG = {
 GAMMA = "https://gamma-api.polymarket.com"
 DERIBIT = "https://www.deribit.com/api/v2/public"
 HERE = os.path.dirname(os.path.abspath(__file__))
-DATA = os.path.join(HERE, "data")
+# Two versions run side by side (paper trading is free, so test both):
+#   MODEL=surface (default): volatility at each market's own price level (includes "crash insurance" premium)
+#   MODEL=atm: one volatility per date, taken at the current price (no crash premium), like the backtest
+MODEL = os.environ.get("MODEL", "surface")
+DATA = os.path.join(HERE, "data" if MODEL == "surface" else "data_atm")
 TRADES = os.path.join(DATA, "paper_trades.csv")
 SCANS = os.path.join(DATA, "scans.csv")
 TRADE_FIELDS = ["opened_at", "market_id", "slug", "question", "asset", "kind", "strike", "end_date",
@@ -132,6 +136,8 @@ def _iv_at_strike(chain, spot, K):
 
 
 def implied_vol(opts, spot, K, end):
+    if MODEL == "atm":
+        K = spot
     """IV for strike K at the market's end date: interpolate total variance between the
     option expiries just before and just after the end date."""
     now = now_utc()
