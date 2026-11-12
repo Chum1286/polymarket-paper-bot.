@@ -15,7 +15,7 @@ Run:  python paper_bot.py          (one scan)
       python report.py             (see results)
 Only uses the Python standard library.
 """
-import csv, json, math, os, re, sys, time, urllib.request, urllib.parse
+import csv, gzip, json, math, os, re, sys, time, urllib.request, urllib.parse
 from datetime import datetime, timezone
 
 # ---------------- settings you can change ----------------
@@ -56,9 +56,16 @@ SCAN_FIELDS = ["ts", "market_id", "question", "asset", "kind", "strike", "end_da
 def get_json(url, tries=3):
     for i in range(tries):
         try:
-            req = urllib.request.Request(url, headers={"User-Agent": "paper-bot/1.0"})
+            # Polymarket now requires compressed (gzip) responses for bigger requests
+            req = urllib.request.Request(url, headers={"User-Agent": "paper-bot/1.0", "Accept-Encoding": "gzip"})
             with urllib.request.urlopen(req, timeout=30) as r:
-                return json.loads(r.read().decode())
+                raw = r.read()
+                if r.headers.get("Content-Encoding") == "gzip" or raw[:2] == b"\x1f\x8b":
+                    raw = gzip.decompress(raw)
+                data = json.loads(raw.decode())
+            if isinstance(data, dict) and data.get("error"):
+                raise RuntimeError(f"API error: {data}")
+            return data
         except Exception as e:
             if i == tries - 1:
                 raise RuntimeError(f"Could not fetch {url}: {e}")
@@ -189,12 +196,12 @@ def window_start(event_slug, end):
 def find_markets(asset, tag):
     events, offset = [], 0
     while True:
-        page = get_json(f"{GAMMA}/events?tag_slug={tag}&active=true&closed=false&limit=100&offset={offset}")
-        if not page:
+        page = get_json(f"{GAMMA}/events?tag_slug={tag}&active=true&closed=false&limit=50&offset={offset}")
+        if not isinstance(page, list) or not page:
             break
         events += page
-        offset += 100
-        if len(page) < 100 or offset > 1000:
+        offset += 50
+        if len(page) < 50 or offset > 1000:
             break
     out = []
     for e in events:

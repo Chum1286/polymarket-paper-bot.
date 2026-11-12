@@ -15,9 +15,13 @@ def sh(cmd, env=None):
     return subprocess.run(cmd, shell=True, env=env).returncode
 
 
+fails_in_a_row = 0
 while True:
-    for model in ("surface", "atm"):
-        sh("python paper_bot.py", env=dict(os.environ, MODEL=model))
+    ok = all([sh("python paper_bot.py", env=dict(os.environ, MODEL=model)) == 0 for model in ("surface", "atm")])
+    fails_in_a_row = 0 if ok else fails_in_a_row + 1
+    if fails_in_a_row >= 3:
+        # Stop with an error so GitHub shows a red X (and the next run retries)
+        sys.exit("Scans failed 3 times in a row - something is broken. See the error above.")
     sh('git add data data_atm && (git diff --cached --quiet || '
        'git commit -q -m "paper bot run $(date -u +%Y-%m-%dT%H:%MZ)")')
     for _ in range(3):  # retry push if the repo changed meanwhile
